@@ -1,11 +1,21 @@
 const CLIENT_API_BASE = import.meta.env.VITE_API_URL ?? "/api";
-const SERVER_API_BASE =
-  import.meta.env.VITE_SERVER_API_URL ??
-  (import.meta.env.DEV ? "http://127.0.0.1:3001" : (import.meta.env.VITE_API_URL ?? "/api"));
+
+function getServerApiBase(): string {
+  if (typeof process !== "undefined" && process?.env?.BACKEND_SERVICE_URL) {
+    return process.env.BACKEND_SERVICE_URL;
+  }
+  if (typeof process !== "undefined" && process?.env?.VITE_SERVER_API_URL) {
+    return process.env.VITE_SERVER_API_URL;
+  }
+  return (
+    import.meta.env.VITE_SERVER_API_URL ??
+    (import.meta.env.DEV ? "http://127.0.0.1:3001" : (import.meta.env.VITE_API_URL ?? "/api"))
+  );
+}
 
 export function getApiBase() {
   if (typeof window === "undefined") {
-    return SERVER_API_BASE;
+    return getServerApiBase();
   }
   if (CLIENT_API_BASE && CLIENT_API_BASE !== "/api") {
     return CLIENT_API_BASE;

@@ -1,0 +1,1 @@
+import{t as e}from"./jsx-runtime-n5LQ9ujS.js";import{t}from"./product-form-amJubIIf.js";var n=e(),r=()=>(0,n.jsx)(t,{mode:`create`});export{r as component};
