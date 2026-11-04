@@ -39,26 +39,32 @@ import lifeLace from "@/assets/lifestyle-lace.jpg";
 
 export const Route = createFileRoute("/")({
   loader: async ({ context }) => {
-    void context.queryClient.prefetchQuery({
-      queryKey: ["catalog", "home"],
-      queryFn: () => import("@/lib/api").then((m) => m.api.getHomeCatalog()),
-    });
-    void context.queryClient.prefetchQuery({
-      queryKey: ["brands"],
-      queryFn: () => import("@/lib/api").then((m) => m.api.getBrands()),
-    });
-    void context.queryClient.prefetchQuery({
-      queryKey: ["cms", "home"],
-      queryFn: () => import("@/lib/api").then((m) => m.api.getCmsHome()),
-    });
-    void context.queryClient.prefetchQuery({
-      queryKey: ["cms", "nav"],
-      queryFn: () => import("@/lib/api").then((m) => m.api.getCmsNav()),
-    });
-    void context.queryClient.prefetchQuery({
-      queryKey: ["cms", "banners"],
-      queryFn: () => import("@/lib/api").then((m) => m.api.getCmsBanners()),
-    });
+    try {
+      await Promise.allSettled([
+        context.queryClient.prefetchQuery({
+          queryKey: ["catalog", "home"],
+          queryFn: () => import("@/lib/api").then((m) => m.api.getHomeCatalog()),
+        }),
+        context.queryClient.prefetchQuery({
+          queryKey: ["brands"],
+          queryFn: () => import("@/lib/api").then((m) => m.api.getBrands()),
+        }),
+        context.queryClient.prefetchQuery({
+          queryKey: ["cms", "home"],
+          queryFn: () => import("@/lib/api").then((m) => m.api.getCmsHome()),
+        }),
+        context.queryClient.prefetchQuery({
+          queryKey: ["cms", "nav"],
+          queryFn: () => import("@/lib/api").then((m) => m.api.getCmsNav()),
+        }),
+        context.queryClient.prefetchQuery({
+          queryKey: ["cms", "banners"],
+          queryFn: () => import("@/lib/api").then((m) => m.api.getCmsBanners()),
+        }),
+      ]);
+    } catch {
+      // Graceful SSR degradation: never throw catastrophic SSR errors on prefetch
+    }
     const settings = await context.queryClient
       .ensureQueryData({
         queryKey: ["cms", "settings"],

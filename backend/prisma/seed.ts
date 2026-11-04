@@ -1,41 +1,49 @@
-import { PrismaClient } from '@prisma/client';
-import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3';
-import * as bcrypt from 'bcrypt';
-import 'dotenv/config';
+import { PrismaClient } from "@prisma/client";
+import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
+import { PrismaPg } from "@prisma/adapter-pg";
+import { Pool } from "pg";
+import * as bcrypt from "bcrypt";
+import "dotenv/config";
 
-const url = process.env.DATABASE_URL ?? 'file:./prisma/dev.db';
-const adapter = new PrismaBetterSqlite3({ url });
+const url = process.env.DATABASE_URL ?? "file:./prisma/dev.db";
+let adapter: any;
+if (url.startsWith("postgres://") || url.startsWith("postgresql://")) {
+  const pool = new Pool({ connectionString: url });
+  adapter = new PrismaPg(pool);
+} else {
+  adapter = new PrismaBetterSqlite3({ url });
+}
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
-  console.log('Seeding database...');
+  console.log("Seeding database...");
 
   // 1. Roles & Permissions
   const permissionActions = [
-    { action: 'dashboard:read', description: 'View dashboard' },
-    { action: 'products:manage', description: 'Manage products' },
-    { action: 'categories:manage', description: 'Manage categories' },
-    { action: 'inventory:manage', description: 'Manage inventory' },
-    { action: 'reviews:manage', description: 'Moderate reviews' },
-    { action: 'orders:manage', description: 'Manage orders' },
-    { action: 'returns:manage', description: 'Manage returns' },
-    { action: 'payments:read', description: 'View payments' },
-    { action: 'shipping:manage', description: 'Manage shipping' },
-    { action: 'customers:manage', description: 'Manage customers' },
-    { action: 'coupons:manage', description: 'Manage coupons' },
-    { action: 'analytics:read', description: 'View analytics' },
-    { action: 'admin_users:manage', description: 'Manage admin users' },
-    { action: 'audit:read', description: 'View audit logs' },
-    { action: 'settings:manage', description: 'Manage settings' },
-    { action: 'notifications:manage', description: 'Manage notifications' },
-    { action: 'cms:view', description: 'View CMS content' },
-    { action: 'cms:create', description: 'Create CMS content' },
-    { action: 'cms:update', description: 'Update CMS content' },
-    { action: 'cms:delete', description: 'Delete CMS content' },
-    { action: 'cms:publish', description: 'Publish CMS content' },
-    { action: 'media:upload', description: 'Upload media' },
-    { action: 'media:delete', description: 'Delete media' },
-    { action: 'seo:manage', description: 'Manage SEO' },
+    { action: "dashboard:read", description: "View dashboard" },
+    { action: "products:manage", description: "Manage products" },
+    { action: "categories:manage", description: "Manage categories" },
+    { action: "inventory:manage", description: "Manage inventory" },
+    { action: "reviews:manage", description: "Moderate reviews" },
+    { action: "orders:manage", description: "Manage orders" },
+    { action: "returns:manage", description: "Manage returns" },
+    { action: "payments:read", description: "View payments" },
+    { action: "shipping:manage", description: "Manage shipping" },
+    { action: "customers:manage", description: "Manage customers" },
+    { action: "coupons:manage", description: "Manage coupons" },
+    { action: "analytics:read", description: "View analytics" },
+    { action: "admin_users:manage", description: "Manage admin users" },
+    { action: "audit:read", description: "View audit logs" },
+    { action: "settings:manage", description: "Manage settings" },
+    { action: "notifications:manage", description: "Manage notifications" },
+    { action: "cms:view", description: "View CMS content" },
+    { action: "cms:create", description: "Create CMS content" },
+    { action: "cms:update", description: "Update CMS content" },
+    { action: "cms:delete", description: "Delete CMS content" },
+    { action: "cms:publish", description: "Publish CMS content" },
+    { action: "media:upload", description: "Upload media" },
+    { action: "media:delete", description: "Delete media" },
+    { action: "seo:manage", description: "Manage SEO" },
   ];
 
   const permissionIds: Record<string, string> = {};
@@ -50,71 +58,71 @@ async function main() {
 
   const roleDefs: Array<{ name: string; description: string; actions: string[] }> = [
     {
-      name: 'SUPER_ADMIN',
-      description: 'Full access',
+      name: "SUPER_ADMIN",
+      description: "Full access",
       actions: permissionActions.map((p) => p.action),
     },
     {
-      name: 'ADMIN',
-      description: 'General store management',
-      actions: permissionActions.map((p) => p.action).filter((a) => a !== 'admin_users:manage'),
+      name: "ADMIN",
+      description: "General store management",
+      actions: permissionActions.map((p) => p.action).filter((a) => a !== "admin_users:manage"),
     },
     {
-      name: 'PRODUCT_MANAGER',
-      description: 'Products, categories and inventory',
+      name: "PRODUCT_MANAGER",
+      description: "Products, categories and inventory",
       actions: [
-        'dashboard:read',
-        'products:manage',
-        'categories:manage',
-        'inventory:manage',
-        'reviews:manage',
-        'notifications:manage',
+        "dashboard:read",
+        "products:manage",
+        "categories:manage",
+        "inventory:manage",
+        "reviews:manage",
+        "notifications:manage",
       ],
     },
     {
-      name: 'ORDER_MANAGER',
-      description: 'Orders, shipping and returns',
+      name: "ORDER_MANAGER",
+      description: "Orders, shipping and returns",
       actions: [
-        'dashboard:read',
-        'orders:manage',
-        'returns:manage',
-        'payments:read',
-        'shipping:manage',
-        'notifications:manage',
+        "dashboard:read",
+        "orders:manage",
+        "returns:manage",
+        "payments:read",
+        "shipping:manage",
+        "notifications:manage",
       ],
     },
     {
-      name: 'CUSTOMER_SUPPORT',
-      description: 'Customers and related orders',
+      name: "CUSTOMER_SUPPORT",
+      description: "Customers and related orders",
       actions: [
-        'dashboard:read',
-        'customers:manage',
-        'orders:manage',
-        'returns:manage',
-        'reviews:manage',
-        'notifications:manage',
+        "dashboard:read",
+        "customers:manage",
+        "orders:manage",
+        "returns:manage",
+        "reviews:manage",
+        "notifications:manage",
       ],
     },
     {
-      name: 'MARKETING_MANAGER',
-      description: 'Coupons and promotions',
+      name: "MARKETING_MANAGER",
+      description: "Coupons and promotions",
       actions: [
-        'dashboard:read',
-        'coupons:manage',
-        'analytics:read',
-        'notifications:manage',
-        'cms:view',
-        'cms:create',
-        'cms:update',
-        'cms:publish',
-        'media:upload',
-        'media:delete',
-        'seo:manage',
+        "dashboard:read",
+        "coupons:manage",
+        "analytics:read",
+        "notifications:manage",
+        "cms:view",
+        "cms:create",
+        "cms:update",
+        "cms:publish",
+        "media:upload",
+        "media:delete",
+        "seo:manage",
       ],
     },
     {
-      name: 'CUSTOMER',
-      description: 'Standard customer user',
+      name: "CUSTOMER",
+      description: "Standard customer user",
       actions: [],
     },
   ];
@@ -132,37 +140,37 @@ async function main() {
     });
   }
 
-  const superAdminRole = await prisma.role.findUniqueOrThrow({ where: { name: 'SUPER_ADMIN' } });
-  const customerRole = await prisma.role.findUniqueOrThrow({ where: { name: 'CUSTOMER' } });
+  const superAdminRole = await prisma.role.findUniqueOrThrow({ where: { name: "SUPER_ADMIN" } });
+  const customerRole = await prisma.role.findUniqueOrThrow({ where: { name: "CUSTOMER" } });
 
   // Keep legacy ADMIN role for compatibility; primary admin is SUPER_ADMIN
   await prisma.role.upsert({
-    where: { name: 'ADMIN' },
+    where: { name: "ADMIN" },
     update: {},
-    create: { name: 'ADMIN', description: 'General store management' },
+    create: { name: "ADMIN", description: "General store management" },
   });
 
   // 2. Admin User
-  const passwordHash = await bcrypt.hash('AdminPass123!', 10);
+  const passwordHash = await bcrypt.hash("AdminPass123!", 10);
   const adminUser = await prisma.user.upsert({
-    where: { email: 'admin@sole.com' },
+    where: { email: "admin@sole.com" },
     update: { roleId: superAdminRole.id },
     create: {
-      email: 'admin@sole.com',
+      email: "admin@sole.com",
       passwordHash,
-      firstName: 'Admin',
-      lastName: 'User',
+      firstName: "Admin",
+      lastName: "User",
       roleId: superAdminRole.id,
     },
   });
 
   console.log(`Admin user created: ${adminUser.email} (SUPER_ADMIN)`);
 
-  const customerHash = await bcrypt.hash('Customer123!', 10);
+  const customerHash = await bcrypt.hash("Customer123!", 10);
   const demoCustomers = [
-    { email: 'marcus@sole.example', firstName: 'Marcus', lastName: 'Johnson' },
-    { email: 'sarah@sole.example', firstName: 'Sarah', lastName: 'Lee' },
-    { email: 'alex@sole.example', firstName: 'Alex', lastName: 'Chen' },
+    { email: "marcus@sole.example", firstName: "Marcus", lastName: "Johnson" },
+    { email: "sarah@sole.example", firstName: "Sarah", lastName: "Lee" },
+    { email: "alex@sole.example", firstName: "Alex", lastName: "Chen" },
   ];
   const customerUsers: Array<{ id: string; email: string }> = [];
   for (const c of demoCustomers) {
@@ -179,56 +187,57 @@ async function main() {
     });
     customerUsers.push(user);
   }
-  console.log(`Demo customers seeded: ${demoCustomers.map((c) => c.email).join(', ')}`);
+  console.log(`Demo customers seeded: ${demoCustomers.map((c) => c.email).join(", ")}`);
 
   // Default store settings
   await prisma.setting.upsert({
-    where: { key: 'storeName' },
+    where: { key: "storeName" },
     update: {},
-    create: { key: 'storeName', value: 'SOLE' },
+    create: { key: "storeName", value: "SOLE" },
   });
   await prisma.setting.upsert({
-    where: { key: 'currency' },
+    where: { key: "currency" },
     update: {},
-    create: { key: 'currency', value: 'USD' },
+    create: { key: "currency", value: "USD" },
   });
   await prisma.setting.upsert({
-    where: { key: 'freeShippingThreshold' },
+    where: { key: "freeShippingThreshold" },
     update: {},
-    create: { key: 'freeShippingThreshold', value: '75' },
+    create: { key: "freeShippingThreshold", value: "75" },
   });
 
   const cmsSettings: Array<{ key: string; value: string }> = [
-    { key: 'logoUrl', value: '' },
-    { key: 'faviconUrl', value: '' },
-    { key: 'contactEmail', value: 'support@sole.example' },
-    { key: 'contactPhone', value: '' },
-    { key: 'contactAddress', value: '' },
+    { key: "logoUrl", value: "" },
+    { key: "faviconUrl", value: "" },
+    { key: "contactEmail", value: "support@sole.example" },
+    { key: "contactPhone", value: "" },
+    { key: "contactAddress", value: "" },
     {
-      key: 'socialLinksJson',
+      key: "socialLinksJson",
       value: JSON.stringify({
-        instagram: 'https://www.instagram.com/sole',
-        facebook: 'https://www.facebook.com/sole',
-        twitter: 'https://x.com/sole',
-        youtube: 'https://www.youtube.com/@sole',
+        instagram: "https://www.instagram.com/sole",
+        facebook: "https://www.facebook.com/sole",
+        twitter: "https://x.com/sole",
+        youtube: "https://www.youtube.com/@sole",
       }),
     },
     {
-      key: 'footerText',
-      value: 'Premium footwear for the ones who move different. Engineered for performance. Designed for the streets.',
-    },
-    { key: 'newsletterHeading', value: 'Get 10% off your first order' },
-    {
-      key: 'newsletterSubtext',
-      value: 'Join the list for drops, restocks, and member-only offers.',
-    },
-    { key: 'defaultSeoTitle', value: 'SOLE — Premium Sneakers & Performance Footwear' },
-    {
-      key: 'defaultSeoDescription',
+      key: "footerText",
       value:
-        'Shop the latest premium sneakers, running shoes, and lifestyle footwear. Free shipping over $75, 30-day returns.',
+        "Premium footwear for the ones who move different. Engineered for performance. Designed for the streets.",
     },
-    { key: 'defaultOgImage', value: '' },
+    { key: "newsletterHeading", value: "Get 10% off your first order" },
+    {
+      key: "newsletterSubtext",
+      value: "Join the list for drops, restocks, and member-only offers.",
+    },
+    { key: "defaultSeoTitle", value: "SOLE — Premium Sneakers & Performance Footwear" },
+    {
+      key: "defaultSeoDescription",
+      value:
+        "Shop the latest premium sneakers, running shoes, and lifestyle footwear. Free shipping over $75, 30-day returns.",
+    },
+    { key: "defaultOgImage", value: "" },
   ];
   for (const s of cmsSettings) {
     await prisma.setting.upsert({
@@ -239,7 +248,17 @@ async function main() {
   }
 
   // 3. Brands
-  const brandNames = ['Nike', 'Adidas', 'Jordan', 'Puma', 'New Balance', 'Asics', 'Converse', 'Vans', 'Kidz'];
+  const brandNames = [
+    "Nike",
+    "Adidas",
+    "Jordan",
+    "Puma",
+    "New Balance",
+    "Asics",
+    "Converse",
+    "Vans",
+    "Kidz",
+  ];
   const brands: Record<string, string> = {};
 
   for (const name of brandNames) {
@@ -247,15 +266,15 @@ async function main() {
       where: { name },
       update: {
         description:
-          name === 'Kidz'
-            ? 'Kidz — playful, durable footwear made for growing feet'
+          name === "Kidz"
+            ? "Kidz — playful, durable footwear made for growing feet"
             : `Premium footwear by ${name}`,
       },
       create: {
         name,
         description:
-          name === 'Kidz'
-            ? 'Kidz — playful, durable footwear made for growing feet'
+          name === "Kidz"
+            ? "Kidz — playful, durable footwear made for growing feet"
             : `Premium footwear by ${name}`,
       },
     });
@@ -263,14 +282,18 @@ async function main() {
   }
 
   // 4. Categories
-  const categoryNames = ['Running', 'Basketball', 'Lifestyle', 'Training'];
+  const categoryNames = ["Running", "Basketball", "Lifestyle", "Training"];
   const categories: Record<string, string> = {};
 
   const categoryImages: Record<string, string> = {
-    Running: 'https://images.unsplash.com/photo-1608231387042-66d1773070a5?w=800&auto=format&fit=crop&q=80',
-    Basketball: 'https://images.unsplash.com/photo-1552346154-21d32810aba3?w=800&auto=format&fit=crop&q=80',
-    Lifestyle: 'https://images.unsplash.com/photo-1600185365483-26d7a4cc7519?w=800&auto=format&fit=crop&q=80',
-    Training: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&auto=format&fit=crop&q=80',
+    Running:
+      "https://images.unsplash.com/photo-1608231387042-66d1773070a5?w=800&auto=format&fit=crop&q=80",
+    Basketball:
+      "https://images.unsplash.com/photo-1552346154-21d32810aba3?w=800&auto=format&fit=crop&q=80",
+    Lifestyle:
+      "https://images.unsplash.com/photo-1600185365483-26d7a4cc7519?w=800&auto=format&fit=crop&q=80",
+    Training:
+      "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&auto=format&fit=crop&q=80",
   };
 
   for (const name of categoryNames) {
@@ -283,19 +306,18 @@ async function main() {
   }
 
   // 5. Sample products — 3 published products per brand
-  const img = (id: string) =>
-    `https://images.unsplash.com/${id}?w=800&auto=format&fit=crop&q=80`;
+  const img = (id: string) => `https://images.unsplash.com/${id}?w=800&auto=format&fit=crop&q=80`;
 
-  const COLOR_BLACK = '#111';
-  const COLOR_WHITE = '#fff';
-  const WHITE_FALLBACK_IMG = img('photo-1600185365483-26d7a4cc7519');
+  const COLOR_BLACK = "#111";
+  const COLOR_WHITE = "#fff";
+  const WHITE_FALLBACK_IMG = img("photo-1600185365483-26d7a4cc7519");
 
-  const kidsSizes = ['US 10C', 'US 11C', 'US 13C', 'US 1Y', 'US 2Y', 'US 3Y'] as const;
-  const adultSizes = ['US 9', 'US 10', 'US 11'] as const;
+  const kidsSizes = ["US 10C", "US 11C", "US 13C", "US 1Y", "US 2Y", "US 3Y"] as const;
+  const adultSizes = ["US 9", "US 10", "US 11"] as const;
 
   function buildColorVariants(gender: string) {
-    const sizes = gender === 'kids' ? kidsSizes : adultSizes;
-    const stockByIndex = gender === 'kids' ? [20, 20, 15, 15, 12, 10] : [25, 15, 10];
+    const sizes = gender === "kids" ? kidsSizes : adultSizes;
+    const stockByIndex = gender === "kids" ? [20, 20, 15, 15, 12, 10] : [25, 15, 10];
     return sizes.flatMap((size, i) =>
       [COLOR_BLACK, COLOR_WHITE].map((color) => ({
         size,
@@ -331,420 +353,420 @@ async function main() {
   }> = [
     // Nike (3)
     {
-      name: 'Air Runner Pro',
+      name: "Air Runner Pro",
       price: 189.99,
       compareAtPrice: 220,
-      gender: 'men',
-      brand: 'Nike',
-      category: 'Running',
-      sku: 'NIKE-AIR-RUN-PRO',
-      description: 'Engineered for maximum velocity and dynamic responsiveness.',
+      gender: "men",
+      brand: "Nike",
+      category: "Running",
+      sku: "NIKE-AIR-RUN-PRO",
+      description: "Engineered for maximum velocity and dynamic responsiveness.",
       isPublished: true,
       isFeatured: true,
-      collection: 'summer-26',
-      images: [img('photo-1542291026-7eec264c27ff')],
+      collection: "summer-26",
+      images: [img("photo-1542291026-7eec264c27ff")],
     },
     {
-      name: 'Kids Sprint Lite',
+      name: "Kids Sprint Lite",
       price: 79.99,
       compareAtPrice: 99.99,
-      gender: 'kids',
-      brand: 'Nike',
-      category: 'Running',
-      sku: 'NIKE-KIDS-SPRINT',
-      description: 'Lightweight kids runner built for playground speed.',
+      gender: "kids",
+      brand: "Nike",
+      category: "Running",
+      sku: "NIKE-KIDS-SPRINT",
+      description: "Lightweight kids runner built for playground speed.",
       isPublished: true,
-      images: [img('photo-1514989940723-e8e51635b782')],
+      images: [img("photo-1514989940723-e8e51635b782")],
     },
     {
-      name: 'Pegasus Daily',
+      name: "Pegasus Daily",
       price: 139.99,
-      gender: 'unisex',
-      brand: 'Nike',
-      category: 'Lifestyle',
-      sku: 'NIKE-PEGASUS-DAILY',
-      description: 'Everyday cushioned trainer for city miles and casual wear.',
+      gender: "unisex",
+      brand: "Nike",
+      category: "Lifestyle",
+      sku: "NIKE-PEGASUS-DAILY",
+      description: "Everyday cushioned trainer for city miles and casual wear.",
       isPublished: true,
-      collection: 'summer-26',
-      images: [img('photo-1600185365926-3a2ce3cdb9eb')],
+      collection: "summer-26",
+      images: [img("photo-1600185365926-3a2ce3cdb9eb")],
     },
     // Adidas (3)
     {
-      name: 'Blaze Trail 3.0',
+      name: "Blaze Trail 3.0",
       price: 164.99,
       compareAtPrice: 199.99,
-      gender: 'unisex',
-      brand: 'Adidas',
-      category: 'Training',
-      sku: 'ADI-BLZ-TRL-3',
-      description: 'All-terrain traction outsole with ultra-cushioned midsole.',
+      gender: "unisex",
+      brand: "Adidas",
+      category: "Training",
+      sku: "ADI-BLZ-TRL-3",
+      description: "All-terrain traction outsole with ultra-cushioned midsole.",
       isPublished: true,
-      images: [img('photo-1608231387042-66d1773070a5')],
+      images: [img("photo-1608231387042-66d1773070a5")],
     },
     {
-      name: 'Ultraboost Street',
+      name: "Ultraboost Street",
       price: 179.99,
-      gender: 'men',
-      brand: 'Adidas',
-      category: 'Running',
-      sku: 'ADI-ULTRA-STREET',
-      description: 'Energy-return midsole tuned for long paved runs.',
+      gender: "men",
+      brand: "Adidas",
+      category: "Running",
+      sku: "ADI-ULTRA-STREET",
+      description: "Energy-return midsole tuned for long paved runs.",
       isPublished: true,
       isFeatured: true,
-      collection: 'summer-26',
-      images: [img('photo-1515955656352-a1fa3ffcd111')],
+      collection: "summer-26",
+      images: [img("photo-1515955656352-a1fa3ffcd111")],
     },
     {
-      name: 'Samba Classic OG',
+      name: "Samba Classic OG",
       price: 99.99,
       compareAtPrice: 120,
-      gender: 'unisex',
-      brand: 'Adidas',
-      category: 'Lifestyle',
-      sku: 'ADI-SAMBA-OG',
-      description: 'Terrace classic with gum sole and soft leather upper.',
+      gender: "unisex",
+      brand: "Adidas",
+      category: "Lifestyle",
+      sku: "ADI-SAMBA-OG",
+      description: "Terrace classic with gum sole and soft leather upper.",
       isPublished: true,
-      collection: 'summer-26',
-      images: [img('photo-1595950653106-6c9ebd614d3a')],
+      collection: "summer-26",
+      images: [img("photo-1595950653106-6c9ebd614d3a")],
     },
     // Jordan (3)
     {
-      name: 'Court Legend High',
+      name: "Court Legend High",
       price: 219.99,
-      gender: 'men',
-      brand: 'Jordan',
-      category: 'Basketball',
-      sku: 'JOR-CRT-LEG-HI',
-      description: 'Retro basketball silhouette built with premium full-grain leather.',
+      gender: "men",
+      brand: "Jordan",
+      category: "Basketball",
+      sku: "JOR-CRT-LEG-HI",
+      description: "Retro basketball silhouette built with premium full-grain leather.",
       isPublished: true,
-      images: [img('photo-1552346154-21d32810aba3')],
+      images: [img("photo-1552346154-21d32810aba3")],
     },
     {
-      name: 'Flight Low Retro',
+      name: "Flight Low Retro",
       price: 159.99,
       compareAtPrice: 189.99,
-      gender: 'unisex',
-      brand: 'Jordan',
-      category: 'Lifestyle',
-      sku: 'JOR-FLIGHT-LOW',
-      description: 'Low-cut heritage court shoe with crisp overlays.',
+      gender: "unisex",
+      brand: "Jordan",
+      category: "Lifestyle",
+      sku: "JOR-FLIGHT-LOW",
+      description: "Low-cut heritage court shoe with crisp overlays.",
       isPublished: true,
-      collection: 'summer-26',
-      images: [img('photo-1606107557195-0e29a4b5b4aa')],
+      collection: "summer-26",
+      images: [img("photo-1606107557195-0e29a4b5b4aa")],
     },
     {
-      name: 'Jumpman Trainer',
+      name: "Jumpman Trainer",
       price: 134.99,
-      gender: 'women',
-      brand: 'Jordan',
-      category: 'Training',
-      sku: 'JOR-JUMP-TRAIN',
-      description: 'Stable trainer for gym sessions and quick cuts.',
+      gender: "women",
+      brand: "Jordan",
+      category: "Training",
+      sku: "JOR-JUMP-TRAIN",
+      description: "Stable trainer for gym sessions and quick cuts.",
       isPublished: true,
-      collection: 'summer-26',
-      images: [img('photo-1460353581641-37baddab0fa2')],
+      collection: "summer-26",
+      images: [img("photo-1460353581641-37baddab0fa2")],
     },
     // Puma (3)
     {
-      name: 'Classic Suede',
+      name: "Classic Suede",
       price: 129.99,
-      gender: 'women',
-      brand: 'Puma',
-      category: 'Lifestyle',
-      sku: 'PUM-CLS-SUE-01',
-      description: 'Timeless street icon crafted with plush premium suede.',
+      gender: "women",
+      brand: "Puma",
+      category: "Lifestyle",
+      sku: "PUM-CLS-SUE-01",
+      description: "Timeless street icon crafted with plush premium suede.",
       isPublished: true,
-      collection: 'summer-26',
-      images: [img('photo-1600185365483-26d7a4cc7519')],
+      collection: "summer-26",
+      images: [img("photo-1600185365483-26d7a4cc7519")],
     },
     {
-      name: 'Velocity Nitro',
+      name: "Velocity Nitro",
       price: 144.99,
-      gender: 'men',
-      brand: 'Puma',
-      category: 'Running',
-      sku: 'PUM-VEL-NITRO',
-      description: 'Nitro-infused foam for responsive tempo days.',
+      gender: "men",
+      brand: "Puma",
+      category: "Running",
+      sku: "PUM-VEL-NITRO",
+      description: "Nitro-infused foam for responsive tempo days.",
       isPublished: true,
-      images: [img('photo-1539185441755-769473a23570')],
+      images: [img("photo-1539185441755-769473a23570")],
     },
     {
-      name: 'Court Rider Pro',
+      name: "Court Rider Pro",
       price: 119.99,
       compareAtPrice: 149.99,
-      gender: 'unisex',
-      brand: 'Puma',
-      category: 'Basketball',
-      sku: 'PUM-COURT-RIDER',
-      description: 'Court-ready cushioning with grippy multidirectional outsole.',
+      gender: "unisex",
+      brand: "Puma",
+      category: "Basketball",
+      sku: "PUM-COURT-RIDER",
+      description: "Court-ready cushioning with grippy multidirectional outsole.",
       isPublished: true,
-      images: [img('photo-1552346154-21d32810aba3')],
+      images: [img("photo-1552346154-21d32810aba3")],
     },
     // New Balance (3)
     {
-      name: 'Fresh Foam X',
+      name: "Fresh Foam X",
       price: 149.99,
-      gender: 'unisex',
-      brand: 'New Balance',
-      category: 'Running',
-      sku: 'NB-FRESH-FOAM-X',
-      description: 'Plush cushioning for everyday miles.',
+      gender: "unisex",
+      brand: "New Balance",
+      category: "Running",
+      sku: "NB-FRESH-FOAM-X",
+      description: "Plush cushioning for everyday miles.",
       isPublished: true,
-      images: [img('photo-1606107557195-0e29a4b5b4aa')],
+      images: [img("photo-1606107557195-0e29a4b5b4aa")],
     },
     {
-      name: '574 Core Legacy',
+      name: "574 Core Legacy",
       price: 89.99,
-      gender: 'unisex',
-      brand: 'New Balance',
-      category: 'Lifestyle',
-      sku: 'NB-574-CORE',
-      description: 'Heritage runner reworked for all-day street comfort.',
+      gender: "unisex",
+      brand: "New Balance",
+      category: "Lifestyle",
+      sku: "NB-574-CORE",
+      description: "Heritage runner reworked for all-day street comfort.",
       isPublished: true,
-      images: [img('photo-1539185441755-769473a23570')],
+      images: [img("photo-1539185441755-769473a23570")],
     },
     {
-      name: 'FuelCell Rebel',
+      name: "FuelCell Rebel",
       price: 139.99,
       compareAtPrice: 160,
-      gender: 'women',
-      brand: 'New Balance',
-      category: 'Training',
-      sku: 'NB-FUEL-REBEL',
-      description: 'Snappy FuelCell foam for speed workouts.',
+      gender: "women",
+      brand: "New Balance",
+      category: "Training",
+      sku: "NB-FUEL-REBEL",
+      description: "Snappy FuelCell foam for speed workouts.",
       isPublished: true,
       isFeatured: true,
-      collection: 'summer-26',
-      images: [img('photo-1542291026-7eec264c27ff')],
+      collection: "summer-26",
+      images: [img("photo-1542291026-7eec264c27ff")],
     },
     // Asics (3)
     {
-      name: 'Studio Flow',
+      name: "Studio Flow",
       price: 119.99,
-      gender: 'women',
-      brand: 'Asics',
-      category: 'Training',
-      sku: 'ASI-STD-FLOW',
-      description: 'Flexible training shoe for studio and street.',
+      gender: "women",
+      brand: "Asics",
+      category: "Training",
+      sku: "ASI-STD-FLOW",
+      description: "Flexible training shoe for studio and street.",
       isPublished: true,
-      collection: 'summer-26',
-      images: [img('photo-1539185441755-769473a23570')],
+      collection: "summer-26",
+      images: [img("photo-1539185441755-769473a23570")],
     },
     {
-      name: 'Gel-Nimbus Ride',
+      name: "Gel-Nimbus Ride",
       price: 159.99,
-      gender: 'men',
-      brand: 'Asics',
-      category: 'Running',
-      sku: 'ASI-GEL-NIMBUS',
-      description: 'Max cushion GEL protection for long easy runs.',
+      gender: "men",
+      brand: "Asics",
+      category: "Running",
+      sku: "ASI-GEL-NIMBUS",
+      description: "Max cushion GEL protection for long easy runs.",
       isPublished: true,
-      images: [img('photo-1608231387042-66d1773070a5')],
+      images: [img("photo-1608231387042-66d1773070a5")],
     },
     {
-      name: 'Court Speed FF',
+      name: "Court Speed FF",
       price: 129.99,
       compareAtPrice: 149.99,
-      gender: 'unisex',
-      brand: 'Asics',
-      category: 'Lifestyle',
-      sku: 'ASI-COURT-SPEED',
-      description: 'Lightweight court-inspired sneaker with FlyteFoam bounce.',
+      gender: "unisex",
+      brand: "Asics",
+      category: "Lifestyle",
+      sku: "ASI-COURT-SPEED",
+      description: "Lightweight court-inspired sneaker with FlyteFoam bounce.",
       isPublished: true,
-      images: [img('photo-1515955656352-a1fa3ffcd111')],
+      images: [img("photo-1515955656352-a1fa3ffcd111")],
     },
     // Converse (3)
     {
-      name: 'Chuck 70 High',
+      name: "Chuck 70 High",
       price: 89.99,
       compareAtPrice: 110,
-      gender: 'unisex',
-      brand: 'Converse',
-      category: 'Lifestyle',
-      sku: 'CNV-CHUCK-70',
-      description: 'Iconic high-top with vintage canvas and rubber sole.',
+      gender: "unisex",
+      brand: "Converse",
+      category: "Lifestyle",
+      sku: "CNV-CHUCK-70",
+      description: "Iconic high-top with vintage canvas and rubber sole.",
       isPublished: true,
-      collection: 'summer-26',
-      images: [img('photo-1460353581641-37baddab0fa2')],
+      collection: "summer-26",
+      images: [img("photo-1460353581641-37baddab0fa2")],
     },
     {
-      name: 'Chuck Taylor Low',
+      name: "Chuck Taylor Low",
       price: 69.99,
-      gender: 'unisex',
-      brand: 'Converse',
-      category: 'Lifestyle',
-      sku: 'CNV-CHUCK-LOW',
-      description: 'Clean low-top canvas essential for everyday fits.',
+      gender: "unisex",
+      brand: "Converse",
+      category: "Lifestyle",
+      sku: "CNV-CHUCK-LOW",
+      description: "Clean low-top canvas essential for everyday fits.",
       isPublished: true,
-      collection: 'summer-26',
-      images: [img('photo-1600185365483-26d7a4cc7519')],
+      collection: "summer-26",
+      images: [img("photo-1600185365483-26d7a4cc7519")],
     },
     {
-      name: 'Run Star Motion',
+      name: "Run Star Motion",
       price: 109.99,
-      gender: 'women',
-      brand: 'Converse',
-      category: 'Training',
-      sku: 'CNV-RUN-STAR',
-      description: 'Chunky platform trainer with modern traction.',
+      gender: "women",
+      brand: "Converse",
+      category: "Training",
+      sku: "CNV-RUN-STAR",
+      description: "Chunky platform trainer with modern traction.",
       isPublished: true,
-      images: [img('photo-1595950653106-6c9ebd614d3a')],
+      images: [img("photo-1595950653106-6c9ebd614d3a")],
     },
     // Vans (3)
     {
-      name: 'Old Skool Classic',
+      name: "Old Skool Classic",
       price: 79.99,
-      gender: 'unisex',
-      brand: 'Vans',
-      category: 'Lifestyle',
-      sku: 'VAN-OLD-SKOOL',
-      description: 'Skate staple with signature side stripe.',
+      gender: "unisex",
+      brand: "Vans",
+      category: "Lifestyle",
+      sku: "VAN-OLD-SKOOL",
+      description: "Skate staple with signature side stripe.",
       isPublished: true,
-      collection: 'summer-26',
-      images: [img('photo-1606107557195-0e29a4b5b4aa')],
+      collection: "summer-26",
+      images: [img("photo-1606107557195-0e29a4b5b4aa")],
     },
     {
-      name: 'Sk8-Hi Reissue',
+      name: "Sk8-Hi Reissue",
       price: 84.99,
       compareAtPrice: 95,
-      gender: 'unisex',
-      brand: 'Vans',
-      category: 'Lifestyle',
-      sku: 'VAN-SK8-HI',
-      description: 'High-top skate classic with padded collar.',
+      gender: "unisex",
+      brand: "Vans",
+      category: "Lifestyle",
+      sku: "VAN-SK8-HI",
+      description: "High-top skate classic with padded collar.",
       isPublished: true,
-      images: [img('photo-1595950653106-6c9ebd614d3a')],
+      images: [img("photo-1595950653106-6c9ebd614d3a")],
     },
     {
-      name: 'UltraRange Neo',
+      name: "UltraRange Neo",
       price: 99.99,
-      gender: 'men',
-      brand: 'Vans',
-      category: 'Running',
-      sku: 'VAN-ULTRA-NEO',
-      description: 'Comfort-focused walker ready for travel days.',
+      gender: "men",
+      brand: "Vans",
+      category: "Running",
+      sku: "VAN-ULTRA-NEO",
+      description: "Comfort-focused walker ready for travel days.",
       isPublished: true,
-      images: [img('photo-1514989940723-e8e51635b782')],
+      images: [img("photo-1514989940723-e8e51635b782")],
     },
     // Kidz (10)
     {
-      name: 'Kidz Play Runner',
+      name: "Kidz Play Runner",
       price: 64.99,
       compareAtPrice: 79.99,
-      gender: 'kids',
-      brand: 'Kidz',
-      category: 'Running',
-      sku: 'KIDZ-PLAY-RUN',
-      description: 'Bouncy foam midsole and grippy outsole for playground sprints.',
+      gender: "kids",
+      brand: "Kidz",
+      category: "Running",
+      sku: "KIDZ-PLAY-RUN",
+      description: "Bouncy foam midsole and grippy outsole for playground sprints.",
       isPublished: true,
       isFeatured: true,
-      collection: 'summer-26',
-      images: [img('photo-1514989940723-e8e51635b782')],
+      collection: "summer-26",
+      images: [img("photo-1514989940723-e8e51635b782")],
     },
     {
-      name: 'Kidz Court Mini',
+      name: "Kidz Court Mini",
       price: 69.99,
-      gender: 'kids',
-      brand: 'Kidz',
-      category: 'Basketball',
-      sku: 'KIDZ-COURT-MINI',
-      description: 'Low-cut court shoe with padded collar for after-school games.',
+      gender: "kids",
+      brand: "Kidz",
+      category: "Basketball",
+      sku: "KIDZ-COURT-MINI",
+      description: "Low-cut court shoe with padded collar for after-school games.",
       isPublished: true,
-      images: [img('photo-1552346154-21d32810aba3')],
+      images: [img("photo-1552346154-21d32810aba3")],
     },
     {
-      name: 'Kidz Street Soft',
+      name: "Kidz Street Soft",
       price: 54.99,
-      gender: 'kids',
-      brand: 'Kidz',
-      category: 'Lifestyle',
-      sku: 'KIDZ-STREET-SOFT',
-      description: 'Soft suede-feel upper and easy on-off for everyday wear.',
+      gender: "kids",
+      brand: "Kidz",
+      category: "Lifestyle",
+      sku: "KIDZ-STREET-SOFT",
+      description: "Soft suede-feel upper and easy on-off for everyday wear.",
       isPublished: true,
-      collection: 'summer-26',
-      images: [img('photo-1600185365483-26d7a4cc7519')],
+      collection: "summer-26",
+      images: [img("photo-1600185365483-26d7a4cc7519")],
     },
     {
-      name: 'Kidz Trail Scout',
+      name: "Kidz Trail Scout",
       price: 74.99,
       compareAtPrice: 89.99,
-      gender: 'kids',
-      brand: 'Kidz',
-      category: 'Training',
-      sku: 'KIDZ-TRAIL-SCOUT',
-      description: 'Rugged outsole for park paths and weekend adventures.',
+      gender: "kids",
+      brand: "Kidz",
+      category: "Training",
+      sku: "KIDZ-TRAIL-SCOUT",
+      description: "Rugged outsole for park paths and weekend adventures.",
       isPublished: true,
-      images: [img('photo-1608231387042-66d1773070a5')],
+      images: [img("photo-1608231387042-66d1773070a5")],
     },
     {
-      name: 'Kidz Glow Knit',
+      name: "Kidz Glow Knit",
       price: 59.99,
-      gender: 'kids',
-      brand: 'Kidz',
-      category: 'Running',
-      sku: 'KIDZ-GLOW-KNIT',
-      description: 'Breathable knit upper with reflective hits for dusk play.',
+      gender: "kids",
+      brand: "Kidz",
+      category: "Running",
+      sku: "KIDZ-GLOW-KNIT",
+      description: "Breathable knit upper with reflective hits for dusk play.",
       isPublished: true,
       isFeatured: true,
-      images: [img('photo-1542291026-7eec264c27ff')],
+      images: [img("photo-1542291026-7eec264c27ff")],
     },
     {
-      name: 'Kidz Jump Low',
+      name: "Kidz Jump Low",
       price: 72.99,
-      gender: 'kids',
-      brand: 'Kidz',
-      category: 'Basketball',
-      sku: 'KIDZ-JUMP-LOW',
-      description: 'Responsive court cushioning sized for growing athletes.',
+      gender: "kids",
+      brand: "Kidz",
+      category: "Basketball",
+      sku: "KIDZ-JUMP-LOW",
+      description: "Responsive court cushioning sized for growing athletes.",
       isPublished: true,
-      images: [img('photo-1551107696-a4b0c5a0d9a2')],
+      images: [img("photo-1551107696-a4b0c5a0d9a2")],
     },
     {
-      name: 'Kidz School Day',
+      name: "Kidz School Day",
       price: 49.99,
       compareAtPrice: 59.99,
-      gender: 'kids',
-      brand: 'Kidz',
-      category: 'Lifestyle',
-      sku: 'KIDZ-SCHOOL-DAY',
-      description: 'Durable daily sneaker that survives recess and classroom miles.',
+      gender: "kids",
+      brand: "Kidz",
+      category: "Lifestyle",
+      sku: "KIDZ-SCHOOL-DAY",
+      description: "Durable daily sneaker that survives recess and classroom miles.",
       isPublished: true,
-      collection: 'summer-26',
-      images: [img('photo-1606107557195-0e29a4b5b4aa')],
+      collection: "summer-26",
+      images: [img("photo-1606107557195-0e29a4b5b4aa")],
     },
     {
-      name: 'Kidz Recess High',
+      name: "Kidz Recess High",
       price: 67.99,
-      gender: 'kids',
-      brand: 'Kidz',
-      category: 'Lifestyle',
-      sku: 'KIDZ-RECESS-HI',
-      description: 'High-top support with soft lining for all-day comfort.',
+      gender: "kids",
+      brand: "Kidz",
+      category: "Lifestyle",
+      sku: "KIDZ-RECESS-HI",
+      description: "High-top support with soft lining for all-day comfort.",
       isPublished: true,
-      images: [img('photo-1595950653106-6c9ebd614d3a')],
+      images: [img("photo-1595950653106-6c9ebd614d3a")],
     },
     {
-      name: 'Kidz Velocity Jr',
+      name: "Kidz Velocity Jr",
       price: 79.99,
-      gender: 'kids',
-      brand: 'Kidz',
-      category: 'Running',
-      sku: 'KIDZ-VEL-JR',
-      description: 'Lightweight trainer tuned for PE and junior track days.',
+      gender: "kids",
+      brand: "Kidz",
+      category: "Running",
+      sku: "KIDZ-VEL-JR",
+      description: "Lightweight trainer tuned for PE and junior track days.",
       isPublished: true,
-      images: [img('photo-1600185365926-3a2ce3cdb9eb')],
+      images: [img("photo-1600185365926-3a2ce3cdb9eb")],
     },
     {
-      name: 'Kidz Classic Canvas',
+      name: "Kidz Classic Canvas",
       price: 44.99,
       compareAtPrice: 54.99,
-      gender: 'kids',
-      brand: 'Kidz',
-      category: 'Lifestyle',
-      sku: 'KIDZ-CLASSIC-CNV',
-      description: 'Easy canvas low-top with vulcanized feel for casual days.',
+      gender: "kids",
+      brand: "Kidz",
+      category: "Lifestyle",
+      sku: "KIDZ-CLASSIC-CNV",
+      description: "Easy canvas low-top with vulcanized feel for casual days.",
       isPublished: true,
-      images: [img('photo-1460353581641-37baddab0fa2')],
+      images: [img("photo-1460353581641-37baddab0fa2")],
     },
   ];
 
@@ -764,7 +786,7 @@ async function main() {
           description: prod.description,
           sku: prod.sku,
           isPublished: prod.isPublished,
-          status: prod.isPublished ? 'ACTIVE' : 'DRAFT',
+          status: prod.isPublished ? "ACTIVE" : "DRAFT",
           brandId: brands[prod.brand],
           categories: {
             create: {
@@ -790,7 +812,7 @@ async function main() {
           collection: prod.collection ?? null,
           price: prod.price,
           isPublished: prod.isPublished,
-          status: prod.isPublished ? 'ACTIVE' : 'DRAFT',
+          status: prod.isPublished ? "ACTIVE" : "DRAFT",
         },
       });
       // Sync colorway images (altText = hex for PDP mapping)
@@ -812,7 +834,7 @@ async function main() {
           continue;
         }
         const def = existingVars.find(
-          (e) => e.size === v.size && (e.color === 'Default' || e.color == null),
+          (e) => e.size === v.size && (e.color === "Default" || e.color == null),
         );
         if (def && v.color === COLOR_BLACK) {
           await prisma.productVariant.update({
@@ -833,47 +855,47 @@ async function main() {
 
   // Coupons
   await prisma.coupon.upsert({
-    where: { code: 'SOLE10' },
+    where: { code: "SOLE10" },
     update: {
-      description: '10% off your order',
-      discountType: 'percent',
+      description: "10% off your order",
+      discountType: "percent",
       discountValue: 10,
       minOrderValue: 0,
     },
     create: {
-      code: 'SOLE10',
-      description: '10% off your order',
-      discountType: 'percent',
+      code: "SOLE10",
+      description: "10% off your order",
+      discountType: "percent",
       discountValue: 10,
       minOrderValue: 0,
     },
   });
 
   await prisma.coupon.upsert({
-    where: { code: 'FREESHIP' },
+    where: { code: "FREESHIP" },
     update: {
-      description: 'Free standard shipping',
-      discountType: 'free_shipping',
+      description: "Free standard shipping",
+      discountType: "free_shipping",
       discountValue: 0,
       minOrderValue: 0,
     },
     create: {
-      code: 'FREESHIP',
-      description: 'Free standard shipping',
-      discountType: 'free_shipping',
+      code: "FREESHIP",
+      description: "Free standard shipping",
+      discountType: "free_shipping",
       discountValue: 0,
       minOrderValue: 0,
     },
   });
 
-  console.log('Coupons seeded: SOLE10, FREESHIP');
+  console.log("Coupons seeded: SOLE10, FREESHIP");
 
   // Help / CMS pages
   const helpPages = [
     {
-      slug: 'shipping',
-      title: 'Shipping',
-      type: 'page',
+      slug: "shipping",
+      title: "Shipping",
+      type: "page",
       content: `Free standard shipping on orders over $75 within the contiguous United States.
 
 Standard shipping: 3–5 business days ($5.99 under $75).
@@ -885,9 +907,9 @@ International shipping is not available in this demo store.
 You will receive a confirmation email with tracking once your order ships.`,
     },
     {
-      slug: 'returns',
-      title: 'Returns',
-      type: 'page',
+      slug: "returns",
+      title: "Returns",
+      type: "page",
       content: `We offer a 30-day return window from the delivery date.
 
 Items must be unworn, in original packaging, with tags attached.
@@ -899,9 +921,9 @@ Refunds are issued to the original payment method within 5–10 business days af
 Exchanges are available for size swaps while stock lasts.`,
     },
     {
-      slug: 'size-guide',
-      title: 'Size Guide',
-      type: 'page',
+      slug: "size-guide",
+      title: "Size Guide",
+      type: "page",
       content: `SOLE sneakers generally run true to size. If you are between sizes, we recommend sizing up.
 
 US Men's / Unisex
@@ -920,9 +942,9 @@ Refer to product pages for kids-specific sizing. Measure foot length in centimet
 Still unsure? Reach out via Contact and include your usual brand/size.`,
     },
     {
-      slug: 'faq',
-      title: 'FAQ',
-      type: 'faq',
+      slug: "faq",
+      title: "FAQ",
+      type: "faq",
       content: `Q: How do I track my order?
 A: Use the order confirmation page link or contact support with your order ID.
 
@@ -942,9 +964,9 @@ Q: Where is my wishlist saved?
 A: Wishlists are saved in your browser for guest shoppers.`,
     },
     {
-      slug: 'contact',
-      title: 'Contact',
-      type: 'page',
+      slug: "contact",
+      title: "Contact",
+      type: "page",
       content: `We're here to help with orders, sizing, returns, and product questions.
 
 Email: support@sole.example
@@ -962,7 +984,7 @@ Prefer a form? Send us a message below and our team will get back to you.`,
         content: page.content,
         type: page.type,
         published: true,
-        status: 'PUBLISHED',
+        status: "PUBLISHED",
         publishedAt: new Date(),
       },
       create: {
@@ -971,18 +993,18 @@ Prefer a form? Send us a message below and our team will get back to you.`,
         content: page.content,
         type: page.type,
         published: true,
-        status: 'PUBLISHED',
+        status: "PUBLISHED",
         publishedAt: new Date(),
       },
     });
   }
-  console.log('Help CMS pages seeded: shipping, returns, size-guide, faq, contact');
+  console.log("Help CMS pages seeded: shipping, returns, size-guide, faq, contact");
 
   const companyLegalPages = [
     {
-      slug: 'about',
-      title: 'About',
-      type: 'page',
+      slug: "about",
+      title: "About",
+      type: "page",
       content: `SOLE designs premium footwear for people who move with intention — on the track, in the gym, and through the city.
 
 Founded as a performance-meets-street brand, we obsess over materials, fit, and lasting comfort. Every silhouette in our catalog is built to feel as good on mile ten as it does on day one.
@@ -990,9 +1012,9 @@ Founded as a performance-meets-street brand, we obsess over materials, fit, and 
 Our team spans design, product, and community. We ship from US warehouses and support customers with a 30-day return window and free standard shipping over $75.`,
     },
     {
-      slug: 'careers',
-      title: 'Careers',
-      type: 'page',
+      slug: "careers",
+      title: "Careers",
+      type: "page",
       content: `Join the SOLE crew.
 
 We're always looking for people who care about craft, product, and customer experience.
@@ -1008,9 +1030,9 @@ Send a short intro and resume to careers@sole.example. We review applications on
 SOLE is an equal opportunity employer.`,
     },
     {
-      slug: 'press',
-      title: 'Press',
-      type: 'page',
+      slug: "press",
+      title: "Press",
+      type: "page",
       content: `Press & media
 
 For interviews, product samples, and brand assets, contact press@sole.example.
@@ -1022,9 +1044,9 @@ Recent themes: Summer '26 collection, performance cushioning, and our guest wish
 Please allow 2–3 business days for response.`,
     },
     {
-      slug: 'sustainability',
-      title: 'Sustainability',
-      type: 'page',
+      slug: "sustainability",
+      title: "Sustainability",
+      type: "page",
       content: `We're building SOLE with longer wear in mind.
 
 What we're doing:
@@ -1036,9 +1058,9 @@ What we're doing:
 This is an ongoing effort. We'll keep publishing updates as we improve materials and logistics.`,
     },
     {
-      slug: 'stores',
-      title: 'Stores',
-      type: 'page',
+      slug: "stores",
+      title: "Stores",
+      type: "page",
       content: `SOLE is primarily an online store.
 
 Demo flagship (placeholder):
@@ -1050,9 +1072,9 @@ Pop-ups and wholesale partners are announced on our newsletter and social channe
 Can't visit in person? Shop anytime at sole.example with free shipping over $75.`,
     },
     {
-      slug: 'privacy',
-      title: 'Privacy Policy',
-      type: 'page',
+      slug: "privacy",
+      title: "Privacy Policy",
+      type: "page",
       content: `Last updated: 2026
 
 SOLE (“we”) respects your privacy. This demo policy explains what we collect and why.
@@ -1073,9 +1095,9 @@ We do not sell personal data. Access is limited to systems needed to run this de
 Contact privacy@sole.example for data requests.`,
     },
     {
-      slug: 'terms',
-      title: 'Terms of Service',
-      type: 'page',
+      slug: "terms",
+      title: "Terms of Service",
+      type: "page",
       content: `Last updated: 2026
 
 By using the SOLE demo store you agree to these terms.
@@ -1093,9 +1115,9 @@ Limitation: This storefront is a development demo; we provide it “as is” wit
 Questions: support@sole.example`,
     },
     {
-      slug: 'cookies',
-      title: 'Cookies',
-      type: 'page',
+      slug: "cookies",
+      title: "Cookies",
+      type: "page",
       content: `Last updated: 2026
 
 SOLE uses browser storage to make the demo work:
@@ -1121,7 +1143,7 @@ For more on data use, see our Privacy Policy.`,
         content: page.content,
         type: page.type,
         published: true,
-        status: 'PUBLISHED',
+        status: "PUBLISHED",
         publishedAt: new Date(),
       },
       create: {
@@ -1130,13 +1152,13 @@ For more on data use, see our Privacy Policy.`,
         content: page.content,
         type: page.type,
         published: true,
-        status: 'PUBLISHED',
+        status: "PUBLISHED",
         publishedAt: new Date(),
       },
     });
   }
   console.log(
-    'Company/Legal CMS pages seeded: about, careers, press, sustainability, stores, privacy, terms, cookies',
+    "Company/Legal CMS pages seeded: about, careers, press, sustainability, stores, privacy, terms, cookies",
   );
 
   // Homepage sections (match current storefront copy)
@@ -1147,112 +1169,112 @@ For more on data use, see our Privacy Policy.`,
     payload: Record<string, unknown>;
   }> = [
     {
-      key: 'announcement',
-      title: 'Announcement bar',
+      key: "announcement",
+      title: "Announcement bar",
       sortOrder: 0,
       payload: {
         text: "LIMITED DROP · SUMMER '26 COLLECTION · ENDS SUNDAY",
         linkText: "SUMMER '26 COLLECTION",
-        linkUrl: '/shop?collection=summer-26',
+        linkUrl: "/shop?collection=summer-26",
       },
     },
     {
-      key: 'hero',
-      title: 'Hero',
+      key: "hero",
+      title: "Hero",
       sortOrder: 1,
       payload: {
         badge: "Summer '26",
-        badgeUrl: '/shop?collection=summer-26',
-        heading: 'Step Into the Future.',
+        badgeUrl: "/shop?collection=summer-26",
+        heading: "Step Into the Future.",
         subtitle:
-          'Engineered for the streets. Designed for the extraordinary. The new Air Runner Pro delivers unmatched comfort with a silhouette that defines the era.',
-        ctaText: 'Shop Collection',
-        ctaUrl: '/shop?collection=summer-26',
-        secondaryCtaText: 'Explore Lookbook',
-        secondaryCtaUrl: '/lookbook',
-        imageUrl: '/src/assets/hero-sneaker.jpg',
+          "Engineered for the streets. Designed for the extraordinary. The new Air Runner Pro delivers unmatched comfort with a silhouette that defines the era.",
+        ctaText: "Shop Collection",
+        ctaUrl: "/shop?collection=summer-26",
+        secondaryCtaText: "Explore Lookbook",
+        secondaryCtaUrl: "/lookbook",
+        imageUrl: "/src/assets/hero-sneaker.jpg",
         stats: [
-          { value: '2M+', label: 'Customers' },
-          { value: '500+', label: 'Styles' },
-          { value: '4.9★', label: 'Rated' },
+          { value: "2M+", label: "Customers" },
+          { value: "500+", label: "Styles" },
+          { value: "4.9★", label: "Rated" },
         ],
       },
     },
     {
-      key: 'value_props',
-      title: 'Value props',
+      key: "value_props",
+      title: "Value props",
       sortOrder: 2,
       payload: {
         items: [
-          { title: 'Free Shipping', desc: 'On orders over $75' },
-          { title: '30-Day Returns', desc: 'Easy & free returns' },
-          { title: 'Authentic Guarantee', desc: '100% verified products' },
-          { title: '24/7 Support', desc: 'Always here to help' },
+          { title: "Free Shipping", desc: "On orders over $75" },
+          { title: "30-Day Returns", desc: "Easy & free returns" },
+          { title: "Authentic Guarantee", desc: "100% verified products" },
+          { title: "24/7 Support", desc: "Always here to help" },
         ],
       },
     },
     {
-      key: 'featured_categories',
-      title: 'Featured categories',
+      key: "featured_categories",
+      title: "Featured categories",
       sortOrder: 3,
-      payload: { eyebrow: 'Shop by Category', heading: 'Find Your Fit' },
+      payload: { eyebrow: "Shop by Category", heading: "Find Your Fit" },
     },
     {
-      key: 'featured_products',
-      title: 'Featured products',
+      key: "featured_products",
+      title: "Featured products",
       sortOrder: 4,
-      payload: { eyebrow: 'Best Sellers', heading: 'Trending Now' },
+      payload: { eyebrow: "Best Sellers", heading: "Trending Now" },
     },
     {
-      key: 'split',
-      title: 'Split feature',
+      key: "split",
+      title: "Split feature",
       sortOrder: 5,
       payload: {
         left: {
-          badge: 'Performance',
-          heading: 'Built for Every Mile.',
-          body: 'Discover our running collection engineered with responsive foam and breathable knit uppers.',
-          ctaText: 'Shop Running',
-          ctaUrl: '/shop?category=running',
+          badge: "Performance",
+          heading: "Built for Every Mile.",
+          body: "Discover our running collection engineered with responsive foam and breathable knit uppers.",
+          ctaText: "Shop Running",
+          ctaUrl: "/shop?category=running",
         },
         right: {
-          badge: 'Lifestyle',
-          heading: 'Everyday Elevated.',
-          body: 'Timeless silhouettes crafted from premium materials for the modern wardrobe.',
-          ctaText: 'Shop Lifestyle',
-          ctaUrl: '/shop?category=lifestyle',
+          badge: "Lifestyle",
+          heading: "Everyday Elevated.",
+          body: "Timeless silhouettes crafted from premium materials for the modern wardrobe.",
+          ctaText: "Shop Lifestyle",
+          ctaUrl: "/shop?category=lifestyle",
         },
       },
     },
     {
-      key: 'flash_sale',
-      title: 'Flash sale',
+      key: "flash_sale",
+      title: "Flash sale",
       sortOrder: 6,
       payload: {
-        heading: 'Up to 50% Off Ends Tonight.',
-        ctaText: 'Shop Sale',
-        ctaUrl: '/shop?onSale=true',
+        heading: "Up to 50% Off Ends Tonight.",
+        ctaText: "Shop Sale",
+        ctaUrl: "/shop?onSale=true",
       },
     },
     {
-      key: 'brands',
-      title: 'Brand marquee',
+      key: "brands",
+      title: "Brand marquee",
       sortOrder: 7,
       payload: {},
     },
     {
-      key: 'testimonials',
-      title: 'Testimonials',
+      key: "testimonials",
+      title: "Testimonials",
       sortOrder: 8,
-      payload: { eyebrow: 'Customer Voices', heading: 'Real Reviews' },
+      payload: { eyebrow: "Customer Voices", heading: "Real Reviews" },
     },
     {
-      key: 'newsletter',
-      title: 'Newsletter',
+      key: "newsletter",
+      title: "Newsletter",
       sortOrder: 9,
       payload: {
-        heading: 'Get 10% off your first order',
-        subtext: 'Join the list for drops, restocks, and member-only offers.',
+        heading: "Get 10% off your first order",
+        subtext: "Join the list for drops, restocks, and member-only offers.",
       },
     },
   ];
@@ -1265,26 +1287,26 @@ For more on data use, see our Privacy Policy.`,
         key: section.key,
         title: section.title,
         enabled: true,
-        status: 'PUBLISHED',
+        status: "PUBLISHED",
         sortOrder: section.sortOrder,
         payload: section.payload as object,
       },
     });
   }
-  console.log('Homepage CMS sections seeded');
+  console.log("Homepage CMS sections seeded");
 
   await prisma.banner.upsert({
-    where: { id: 'seed-banner-summer' },
+    where: { id: "seed-banner-summer" },
     update: {},
     create: {
-      id: 'seed-banner-summer',
-      desktopImageUrl: '',
-      mobileImageUrl: '',
+      id: "seed-banner-summer",
+      desktopImageUrl: "",
+      mobileImageUrl: "",
       title: "Summer '26 Drop",
-      subtitle: 'Limited collection — ends Sunday',
-      buttonText: 'Shop now',
-      buttonLink: '/shop?collection=summer-26',
-      status: 'PUBLISHED',
+      subtitle: "Limited collection — ends Sunday",
+      buttonText: "Shop now",
+      buttonLink: "/shop?collection=summer-26",
+      status: "PUBLISHED",
       sortOrder: 0,
     },
   });
@@ -1295,57 +1317,57 @@ For more on data use, see our Privacy Policy.`,
     items: Array<{ label: string; url: string; sortOrder: number }>;
   }> = [
     {
-      location: 'header',
-      name: 'Header',
+      location: "header",
+      name: "Header",
       items: [
-        { label: 'New', url: '/shop?sort=newest&days=30', sortOrder: 0 },
-        { label: 'Men', url: '/shop?gender=men', sortOrder: 1 },
-        { label: 'Women', url: '/shop?gender=women', sortOrder: 2 },
-        { label: 'Kids', url: '/shop?gender=kids', sortOrder: 3 },
-        { label: 'Sale', url: '/shop?onSale=true', sortOrder: 4 },
-        { label: 'Brands', url: '/brands', sortOrder: 5 },
+        { label: "New", url: "/shop?sort=newest&days=30", sortOrder: 0 },
+        { label: "Men", url: "/shop?gender=men", sortOrder: 1 },
+        { label: "Women", url: "/shop?gender=women", sortOrder: 2 },
+        { label: "Kids", url: "/shop?gender=kids", sortOrder: 3 },
+        { label: "Sale", url: "/shop?onSale=true", sortOrder: 4 },
+        { label: "Brands", url: "/brands", sortOrder: 5 },
       ],
     },
     {
-      location: 'footer_shop',
-      name: 'Footer Shop',
+      location: "footer_shop",
+      name: "Footer Shop",
       items: [
-        { label: 'New Arrivals', url: '/shop?sort=newest&days=30', sortOrder: 0 },
-        { label: 'Men', url: '/shop?gender=men', sortOrder: 1 },
-        { label: 'Women', url: '/shop?gender=women', sortOrder: 2 },
-        { label: 'Kids', url: '/shop?gender=kids', sortOrder: 3 },
-        { label: 'Sale', url: '/shop?onSale=true', sortOrder: 4 },
+        { label: "New Arrivals", url: "/shop?sort=newest&days=30", sortOrder: 0 },
+        { label: "Men", url: "/shop?gender=men", sortOrder: 1 },
+        { label: "Women", url: "/shop?gender=women", sortOrder: 2 },
+        { label: "Kids", url: "/shop?gender=kids", sortOrder: 3 },
+        { label: "Sale", url: "/shop?onSale=true", sortOrder: 4 },
       ],
     },
     {
-      location: 'footer_help',
-      name: 'Footer Help',
+      location: "footer_help",
+      name: "Footer Help",
       items: [
-        { label: 'Shipping', url: '/help/shipping', sortOrder: 0 },
-        { label: 'Returns', url: '/help/returns', sortOrder: 1 },
-        { label: 'Size Guide', url: '/help/size-guide', sortOrder: 2 },
-        { label: 'FAQ', url: '/help/faq', sortOrder: 3 },
-        { label: 'Contact', url: '/help/contact', sortOrder: 4 },
+        { label: "Shipping", url: "/help/shipping", sortOrder: 0 },
+        { label: "Returns", url: "/help/returns", sortOrder: 1 },
+        { label: "Size Guide", url: "/help/size-guide", sortOrder: 2 },
+        { label: "FAQ", url: "/help/faq", sortOrder: 3 },
+        { label: "Contact", url: "/help/contact", sortOrder: 4 },
       ],
     },
     {
-      location: 'footer_company',
-      name: 'Footer Company',
+      location: "footer_company",
+      name: "Footer Company",
       items: [
-        { label: 'About', url: '/company/about', sortOrder: 0 },
-        { label: 'Careers', url: '/company/careers', sortOrder: 1 },
-        { label: 'Press', url: '/company/press', sortOrder: 2 },
-        { label: 'Sustainability', url: '/company/sustainability', sortOrder: 3 },
-        { label: 'Stores', url: '/company/stores', sortOrder: 4 },
+        { label: "About", url: "/company/about", sortOrder: 0 },
+        { label: "Careers", url: "/company/careers", sortOrder: 1 },
+        { label: "Press", url: "/company/press", sortOrder: 2 },
+        { label: "Sustainability", url: "/company/sustainability", sortOrder: 3 },
+        { label: "Stores", url: "/company/stores", sortOrder: 4 },
       ],
     },
     {
-      location: 'footer_legal',
-      name: 'Footer Legal',
+      location: "footer_legal",
+      name: "Footer Legal",
       items: [
-        { label: 'Privacy', url: '/legal/privacy', sortOrder: 0 },
-        { label: 'Terms', url: '/legal/terms', sortOrder: 1 },
-        { label: 'Cookies', url: '/legal/cookies', sortOrder: 2 },
+        { label: "Privacy", url: "/legal/privacy", sortOrder: 0 },
+        { label: "Terms", url: "/legal/terms", sortOrder: 1 },
+        { label: "Cookies", url: "/legal/cookies", sortOrder: 2 },
       ],
     },
   ];
@@ -1369,37 +1391,37 @@ For more on data use, see our Privacy Policy.`,
       });
     }
   }
-  console.log('CMS navigation menus seeded');
+  console.log("CMS navigation menus seeded");
 
   await prisma.blogPost.upsert({
-    where: { slug: 'welcome-to-sole' },
+    where: { slug: "welcome-to-sole" },
     update: {},
     create: {
-      title: 'Welcome to SOLE',
-      slug: 'welcome-to-sole',
-      excerpt: 'How we design premium footwear for the street and the track.',
+      title: "Welcome to SOLE",
+      slug: "welcome-to-sole",
+      excerpt: "How we design premium footwear for the street and the track.",
       content:
-        '<p>SOLE is built for people who move. This is our first journal post — drops, materials, and stories from the floor.</p>',
-      authorName: 'SOLE Team',
-      category: 'Journal',
-      status: 'PUBLISHED',
+        "<p>SOLE is built for people who move. This is our first journal post — drops, materials, and stories from the floor.</p>",
+      authorName: "SOLE Team",
+      category: "Journal",
+      status: "PUBLISHED",
       publishedAt: new Date(),
-      tags: { create: [{ tag: 'news' }, { tag: 'brand' }] },
+      tags: { create: [{ tag: "news" }, { tag: "brand" }] },
     },
   });
-  console.log('Sample blog post seeded');
+  console.log("Sample blog post seeded");
 
   // Reviews
   const reviewTargets = await prisma.product.findMany({
     where: {
       sku: {
         in: [
-          'NIKE-AIR-RUN-PRO',
-          'ADI-BLZ-TRL-3',
-          'JOR-CRT-LEG-HI',
-          'PUM-CLS-SUE-01',
-          'NB-FRESH-FOAM-X',
-          'VAN-OLD-SKOOL',
+          "NIKE-AIR-RUN-PRO",
+          "ADI-BLZ-TRL-3",
+          "JOR-CRT-LEG-HI",
+          "PUM-CLS-SUE-01",
+          "NB-FRESH-FOAM-X",
+          "VAN-OLD-SKOOL",
         ],
       },
       isPublished: true,
@@ -1416,70 +1438,70 @@ For more on data use, see our Privacy Policy.`,
     comment: string;
   }> = [
     {
-      email: 'marcus@sole.example',
-      sku: 'NIKE-AIR-RUN-PRO',
+      email: "marcus@sole.example",
+      sku: "NIKE-AIR-RUN-PRO",
       rating: 5,
-      title: 'Unmatched comfort',
+      title: "Unmatched comfort",
       comment:
         "Best sneakers I've ever owned. Comfort is unmatched and the design is head-turning.",
     },
     {
-      email: 'sarah@sole.example',
-      sku: 'ADI-BLZ-TRL-3',
+      email: "sarah@sole.example",
+      sku: "ADI-BLZ-TRL-3",
       rating: 5,
-      title: 'Premium quality',
+      title: "Premium quality",
+      comment: "Fast shipping, premium packaging, incredible quality. This is now my go-to store.",
+    },
+    {
+      email: "alex@sole.example",
+      sku: "NIKE-AIR-RUN-PRO",
+      rating: 5,
+      title: "Exceeded expectations",
       comment:
-        'Fast shipping, premium packaging, incredible quality. This is now my go-to store.',
+        "The Air Runner Pro exceeded every expectation. Worth every penny — I am buying another pair.",
     },
     {
-      email: 'alex@sole.example',
-      sku: 'NIKE-AIR-RUN-PRO',
-      rating: 5,
-      title: 'Exceeded expectations',
+      email: "marcus@sole.example",
+      sku: "JOR-CRT-LEG-HI",
+      rating: 4,
+      title: "Court classic",
       comment:
-        'The Air Runner Pro exceeded every expectation. Worth every penny — I am buying another pair.',
+        "Solid ankle support and a clean look. Slightly stiff out of the box but breaks in nicely.",
     },
     {
-      email: 'marcus@sole.example',
-      sku: 'JOR-CRT-LEG-HI',
-      rating: 4,
-      title: 'Court classic',
-      comment: 'Solid ankle support and a clean look. Slightly stiff out of the box but breaks in nicely.',
-    },
-    {
-      email: 'sarah@sole.example',
-      sku: 'PUM-CLS-SUE-01',
+      email: "sarah@sole.example",
+      sku: "PUM-CLS-SUE-01",
       rating: 5,
-      title: 'Everyday staple',
-      comment: 'Soft suede and easy to style. Gets compliments every time I wear them.',
+      title: "Everyday staple",
+      comment: "Soft suede and easy to style. Gets compliments every time I wear them.",
     },
     {
-      email: 'alex@sole.example',
-      sku: 'NB-FRESH-FOAM-X',
+      email: "alex@sole.example",
+      sku: "NB-FRESH-FOAM-X",
       rating: 4,
-      title: 'Great for long walks',
-      comment: 'Cushioning is excellent for all-day wear. True to size for me.',
+      title: "Great for long walks",
+      comment: "Cushioning is excellent for all-day wear. True to size for me.",
     },
     {
-      email: 'marcus@sole.example',
-      sku: 'VAN-OLD-SKOOL',
+      email: "marcus@sole.example",
+      sku: "VAN-OLD-SKOOL",
       rating: 5,
-      title: 'Timeless',
-      comment: 'The classic silhouette done right. Durable and comfortable for skating and street.',
+      title: "Timeless",
+      comment: "The classic silhouette done right. Durable and comfortable for skating and street.",
     },
     {
-      email: 'sarah@sole.example',
-      sku: 'NIKE-AIR-RUN-PRO',
+      email: "sarah@sole.example",
+      sku: "NIKE-AIR-RUN-PRO",
       rating: 4,
-      title: 'Fast and light',
-      comment: 'Responsive on tempo runs. Upper breathes well in summer heat.',
+      title: "Fast and light",
+      comment: "Responsive on tempo runs. Upper breathes well in summer heat.",
     },
     {
-      email: 'alex@sole.example',
-      sku: 'ADI-BLZ-TRL-3',
+      email: "alex@sole.example",
+      sku: "ADI-BLZ-TRL-3",
       rating: 5,
-      title: 'Trail ready',
-      comment: 'Grip on wet rock is confidence-inspiring. Midsole still feels lively after months.',
+      title: "Trail ready",
+      comment: "Grip on wet rock is confidence-inspiring. Midsole still feels lively after months.",
     },
   ];
 
@@ -1517,9 +1539,11 @@ For more on data use, see our Privacy Policy.`,
       reviewsCreated += 1;
     }
   }
-  console.log(`Reviews seeded/updated (${reviewsCreated} new) across ${reviewTargets.length} products`);
+  console.log(
+    `Reviews seeded/updated (${reviewsCreated} new) across ${reviewTargets.length} products`,
+  );
 
-  console.log('Seeding completed successfully!');
+  console.log("Seeding completed successfully!");
 }
 
 main()

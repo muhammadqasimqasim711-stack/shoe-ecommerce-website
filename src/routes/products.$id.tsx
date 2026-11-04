@@ -67,10 +67,12 @@ export const Route = createFileRoute("/products/$id")({
     };
   },
   loader: ({ context, params }) =>
-    context.queryClient.ensureQueryData({
-      queryKey: ["products", "detail", params.id],
-      queryFn: () => api.getProduct(params.id),
-    }),
+    context.queryClient
+      .ensureQueryData({
+        queryKey: ["products", "detail", params.id],
+        queryFn: () => api.getProduct(params.id),
+      })
+      .catch(() => undefined),
   component: ProductDetailPage,
 });
 

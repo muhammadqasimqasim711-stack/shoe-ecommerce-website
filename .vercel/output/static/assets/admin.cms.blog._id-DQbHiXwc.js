@@ -1,1 +1,0 @@
-import{t as e}from"./jsx-runtime-n5LQ9ujS.js";import{t}from"./index-Bdqd5kib.js";import{t as n}from"./cms-blog-form-C_5agEab.js";var r=e();function i(){let{id:e}=t.useParams();return(0,r.jsx)(n,{mode:`edit`,id:e})}export{i as component};
