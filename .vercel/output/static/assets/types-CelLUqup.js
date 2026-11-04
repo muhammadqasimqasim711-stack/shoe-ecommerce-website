@@ -1,0 +1,1 @@
+var e=[`SUPER_ADMIN`,`ADMIN`,`PRODUCT_MANAGER`,`ORDER_MANAGER`,`CUSTOMER_SUPPORT`,`MARKETING_MANAGER`];function t(t){return!!t&&e.includes(t)}export{t as n,e as t};

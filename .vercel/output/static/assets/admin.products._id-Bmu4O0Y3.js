@@ -1,0 +1,1 @@
+import{t as e}from"./jsx-runtime-n5LQ9ujS.js";import{t}from"./product-form-Bjz91C9z.js";import{s as n}from"./index-BqsYa8iQ.js";var r=e();function i(){let{id:e}=n.useParams();return(0,r.jsx)(t,{mode:`edit`,productId:e})}export{i as component};

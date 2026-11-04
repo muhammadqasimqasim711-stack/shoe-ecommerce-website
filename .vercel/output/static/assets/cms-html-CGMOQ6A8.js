@@ -1,0 +1,1 @@
+import{t as e}from"./jsx-runtime-n5LQ9ujS.js";var t=e();function n({html:e,className:n}){return e?/<[a-z][\s\S]*>/i.test(e)?(0,t.jsx)(`div`,{className:n,dangerouslySetInnerHTML:{__html:e}}):(0,t.jsx)(`div`,{className:n,style:{whiteSpace:`pre-wrap`},children:e}):null}export{n as t};
