@@ -35,3 +35,12 @@ backend/uploads
 *.njsproj
 *.sln
 *.sw?
+
+# Include traced tslib dependency in the Vercel server function
+!/.vercel/
+!/.vercel/output/
+!/.vercel/output/functions/
+!/.vercel/output/functions/__server.func/
+!/.vercel/output/functions/__server.func/node_modules/
+!/.vercel/output/functions/__server.func/node_modules/tslib/
+!/.vercel/output/functions/__server.func/node_modules/tslib/**
