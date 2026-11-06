@@ -1,16 +1,16 @@
 import { Injectable } from '@nestjs/common';
-import { existsSync, mkdirSync, unlinkSync, writeFileSync } from 'fs';
+import { existsSync, mkdirSync, unlinkSync, writeFileSync, copyFileSync } from 'fs';
 import { extname, join } from 'path';
 import { randomUUID } from 'crypto';
 
-const UPLOAD_DIR = join(process.cwd(), 'uploads', 'cms');
+const UPLOAD_DIR = process.env.VERCEL
+  ? join('/tmp', 'uploads', 'cms')
+  : join(process.cwd(), 'uploads', 'cms');
 
 @Injectable()
 export class FilesService {
   constructor() {
-    if (!existsSync(UPLOAD_DIR)) {
-      mkdirSync(UPLOAD_DIR, { recursive: true });
-    }
+    mkdirSync(UPLOAD_DIR, { recursive: true });
   }
 
   async saveUpload(file: {
@@ -28,7 +28,6 @@ export class FilesService {
     if (file.buffer) {
       writeFileSync(dest, file.buffer);
     } else if (file.path && existsSync(file.path)) {
-      const { copyFileSync } = await import('fs');
       copyFileSync(file.path, dest);
     }
 
