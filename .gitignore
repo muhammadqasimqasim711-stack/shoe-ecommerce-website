@@ -38,3 +38,5 @@ backend/uploads
 *.njsproj
 *.sln
 *.sw?
+
+backend/.env
