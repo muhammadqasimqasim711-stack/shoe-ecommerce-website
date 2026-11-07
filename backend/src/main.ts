@@ -1,16 +1,18 @@
-import { NestFactory } from '@nestjs/core';
+﻿import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
-import { existsSync, mkdirSync } from 'fs';
+import { mkdirSync } from 'fs';
 import { join } from 'path';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
-  const uploadsDir = join(process.cwd(), 'uploads');
-  if (!existsSync(uploadsDir)) mkdirSync(uploadsDir, { recursive: true });
+  const uploadsDir = process.env.VERCEL
+    ? join('/tmp', 'uploads')
+    : join(process.cwd(), 'uploads');
+  mkdirSync(uploadsDir, { recursive: true });
   app.useStaticAssets(uploadsDir, { prefix: '/uploads/' });
 
   // Global validation pipe
@@ -28,7 +30,7 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, document);
 
-  // CORS — allow localhost, 127.0.0.1, LAN IPs (192.168.*, etc.)
+  // CORS â€” allow localhost, 127.0.0.1, LAN IPs (192.168.*, etc.)
   app.enableCors({
     origin: (requestOrigin, callback) => {
       // Allow requests with no origin (like mobile apps, curl, or server-to-server)
@@ -50,7 +52,8 @@ async function bootstrap() {
   const host = process.env.HOST || '0.0.0.0';
   await app.listen(port, host);
   console.log(
-    `🚀 Backend listening on http://${host}:${port} (Local: http://127.0.0.1:${port}, Network: http://192.168.2.4:${port})`,
+    `ðŸš€ Backend listening on http://${host}:${port} (Local: http://127.0.0.1:${port}, Network: http://192.168.2.4:${port})`,
   );
 }
 bootstrap();
+
