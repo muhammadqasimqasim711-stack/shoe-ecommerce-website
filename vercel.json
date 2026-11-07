@@ -15,11 +15,13 @@
         }
       ]
     },
-    "backend": {
-      "root": "backend/",
-      "framework": "nestjs",
-      "buildCommand": "npx prisma generate && npm run build"
-    }
+
+   "backend": {
+  "root": "backend/",
+  "framework": "nestjs",
+  "installCommand": "npm ci",
+  "buildCommand": "npx prisma generate && npm run build"
+}
   },
   "rewrites": [
     {

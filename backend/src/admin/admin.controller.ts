@@ -12,7 +12,8 @@ import {
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AdminRoleGuard } from '../auth/admin-role.guard';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { CurrentUser, AuthPayload } from '../auth/current-user.decorator';
+import { CurrentUser } from '../auth/current-user.decorator';
+import type { AuthPayload } from '../auth/current-user.decorator';
 import { RequirePermissions } from '../auth/permissions.decorator';
 import { PERMISSIONS } from '../common/staff-roles';
 import { AdminService } from './admin.service';
