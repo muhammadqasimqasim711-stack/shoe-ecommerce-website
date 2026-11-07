@@ -3,7 +3,8 @@
   "services": {
     "frontend": {
       "root": "./",
-      "buildCommand": "NITRO_PRESET=vercel npm run build",
+"framework": "tanstack-start",
+"buildCommand": "NITRO_PRESET=vercel npm run build",
       "outputDirectory": ".vercel/output",
       "bindings": [
         {
