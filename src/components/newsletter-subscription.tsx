@@ -179,9 +179,12 @@ export function NewsletterSubscription() {
       {isSubscribed ? (
         <div className="flex flex-col sm:flex-row items-center gap-3 justify-center">
           <Input
+            id="newsletter-subscribed-email"
+            name="subscribedEmail"
             type="email"
             value={email}
             disabled
+            aria-label="Subscribed email address"
             className="h-12 rounded-full bg-muted/60 px-5 text-center sm:text-left text-muted-foreground cursor-not-allowed font-medium"
           />
           <DropdownMenu>
@@ -252,9 +255,12 @@ export function NewsletterSubscription() {
       ) : (
         <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-2">
           <Input
+            id="newsletter-email"
+            name="email"
             type="email"
             required
             placeholder="Enter your email"
+            aria-label="Email address"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             className="h-12 rounded-full bg-background px-5"

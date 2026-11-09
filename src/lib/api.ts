@@ -13,9 +13,7 @@ function getServerApiBase(): string {
     return process.env.BACKEND_SERVICE_URL;
   }
 
-  return import.meta.env.DEV
-    ? "http://127.0.0.1:3001"
-    : (import.meta.env.VITE_API_URL ?? "/api");
+  return import.meta.env.DEV ? "http://127.0.0.1:3001" : (import.meta.env.VITE_API_URL ?? "/api");
 }
 export function getApiBase() {
   if (typeof window === "undefined") {

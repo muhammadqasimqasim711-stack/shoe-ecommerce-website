@@ -16,8 +16,8 @@ export function ProductImage({
   src,
   alt,
   className,
-  width,
-  height,
+  width = 800,
+  height = 800,
   loading = "lazy",
 }: ProductImageProps) {
   const resolved = src || FALLBACK_SHOE;

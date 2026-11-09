@@ -150,6 +150,8 @@ function CheckoutPage() {
               <Input
                 required
                 type="email"
+                autoComplete="email"
+                name="email"
                 placeholder="Email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -160,17 +162,23 @@ function CheckoutPage() {
               <h2 className="font-display text-xl font-black tracking-tight">Shipping address</h2>
               <Input
                 required
+                autoComplete="name"
+                name="fullName"
                 placeholder="Full name"
                 value={address.name}
                 onChange={(e) => setAddress((a) => ({ ...a, name: e.target.value }))}
               />
               <Input
                 required
+                autoComplete="address-line1"
+                name="addressLine1"
                 placeholder="Address line 1"
                 value={address.line1}
                 onChange={(e) => setAddress((a) => ({ ...a, line1: e.target.value }))}
               />
               <Input
+                autoComplete="address-line2"
+                name="addressLine2"
                 placeholder="Address line 2"
                 value={address.line2}
                 onChange={(e) => setAddress((a) => ({ ...a, line2: e.target.value }))}
@@ -178,12 +186,16 @@ function CheckoutPage() {
               <div className="grid sm:grid-cols-2 gap-3">
                 <Input
                   required
+                  autoComplete="address-level2"
+                  name="city"
                   placeholder="City"
                   value={address.city}
                   onChange={(e) => setAddress((a) => ({ ...a, city: e.target.value }))}
                 />
                 <Input
                   required
+                  autoComplete="address-level1"
+                  name="state"
                   placeholder="State"
                   value={address.state}
                   onChange={(e) => setAddress((a) => ({ ...a, state: e.target.value }))}
@@ -192,12 +204,16 @@ function CheckoutPage() {
               <div className="grid sm:grid-cols-2 gap-3">
                 <Input
                   required
+                  autoComplete="postal-code"
+                  name="postalCode"
                   placeholder="ZIP"
                   value={address.zipCode}
                   onChange={(e) => setAddress((a) => ({ ...a, zipCode: e.target.value }))}
                 />
                 <Input
                   required
+                  autoComplete="country-name"
+                  name="country"
                   placeholder="Country"
                   value={address.country}
                   onChange={(e) => setAddress((a) => ({ ...a, country: e.target.value }))}

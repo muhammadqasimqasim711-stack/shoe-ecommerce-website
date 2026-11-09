@@ -120,6 +120,8 @@ export function SiteHeader({ search = "", onSearchChange, showSearch = true }: S
             <div className="hidden md:flex items-center gap-2 rounded-full bg-muted px-4 py-2 w-64">
               <Search className="h-4 w-4 text-muted-foreground shrink-0" />
               <input
+                id="desktop-product-search"
+                name="desktopProductSearch"
                 placeholder={t("searchPlaceholder")}
                 value={value}
                 onChange={(e) => setValue(e.target.value)}
@@ -213,6 +215,8 @@ export function SiteHeader({ search = "", onSearchChange, showSearch = true }: S
             <div className="flex items-center gap-2 rounded-full bg-muted px-4 py-2">
               <Search className="h-4 w-4 text-muted-foreground shrink-0" />
               <input
+                id="mobile-product-search"
+                name="mobileProductSearch"
                 placeholder={t("searchPlaceholder")}
                 value={value}
                 onChange={(e) => setValue(e.target.value)}

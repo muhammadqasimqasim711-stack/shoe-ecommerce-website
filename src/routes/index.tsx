@@ -13,7 +13,6 @@ import {
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
@@ -285,6 +284,8 @@ function Home() {
                 <img
                   src={b.desktopImageUrl}
                   alt=""
+                  width={64}
+                  height={40}
                   className="hidden h-10 w-16 object-cover sm:block"
                 />
               ) : null}
@@ -426,6 +427,8 @@ function Home() {
                 src={c.imageUrl ?? categoryFallbackImages[i % categoryFallbackImages.length]}
                 alt={c.name}
                 loading="lazy"
+                width={600}
+                height={800}
                 className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
@@ -600,6 +603,8 @@ function Home() {
             src={lifeRun}
             alt="Run"
             loading="lazy"
+            width={1200}
+            height={800}
             className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
@@ -631,6 +636,8 @@ function Home() {
             src={lifeLace}
             alt="Style"
             loading="lazy"
+            width={1200}
+            height={800}
             className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
@@ -683,7 +690,14 @@ function Home() {
           </div>
           <Link to="/shop" search={{ onSale: "true" }} className="relative block">
             <div className="absolute inset-0 bg-accent/30 blur-3xl rounded-full" />
-            <img src={shoe3} alt="Sale" loading="lazy" className="relative rounded-3xl" />
+            <img
+              src={shoe3}
+              alt="Sale"
+              loading="lazy"
+              width={800}
+              height={800}
+              className="relative w-full rounded-3xl aspect-square object-cover"
+            />
           </Link>
         </div>
       </section>

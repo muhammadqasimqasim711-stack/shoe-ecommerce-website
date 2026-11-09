@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { api } from "@/lib/api";
+import { api, ApiError } from "@/lib/api";
 import { getCartId, setCartId, clearCartId } from "@/lib/cart-storage";
-import { getWishlistId, setWishlistId } from "@/lib/wishlist-storage";
+import { getWishlistId, setWishlistId, clearWishlistId } from "@/lib/wishlist-storage";
 import type { HomeCatalog, ProductCard } from "@/lib/types";
 
 export function useHomeCatalog() {
@@ -84,7 +84,17 @@ export function useCart() {
     queryFn: () => api.getCart(cartId!),
     enabled: Boolean(cartId),
     staleTime: 10_000,
+    retry: (failureCount, error) =>
+      !(error instanceof ApiError && error.status === 404) && failureCount < 1,
   });
+
+  useEffect(() => {
+    if (cartId && cartQuery.error instanceof ApiError && cartQuery.error.status === 404) {
+      clearCartId();
+      setCartIdState(null);
+      queryClient.removeQueries({ queryKey: ["cart", cartId], exact: true });
+    }
+  }, [cartId, cartQuery.error, queryClient]);
 
   const ensureCart = async () => {
     let id = cartId ?? getCartId();
@@ -189,7 +199,21 @@ export function useWishlist() {
     queryFn: () => api.getWishlist(wishlistId!),
     enabled: Boolean(wishlistId),
     staleTime: 10_000,
+    retry: (failureCount, error) =>
+      !(error instanceof ApiError && error.status === 404) && failureCount < 1,
   });
+
+  useEffect(() => {
+    if (
+      wishlistId &&
+      wishlistQuery.error instanceof ApiError &&
+      wishlistQuery.error.status === 404
+    ) {
+      clearWishlistId();
+      setWishlistIdState(null);
+      queryClient.removeQueries({ queryKey: ["wishlist", wishlistId], exact: true });
+    }
+  }, [wishlistId, wishlistQuery.error, queryClient]);
 
   const syncWishlist = (wishlist: Awaited<ReturnType<typeof api.getWishlist>>) => {
     setWishlistId(wishlist.id);
