@@ -69,6 +69,7 @@ export function useAuth() {
           setTokenState(null);
           setCachedUser(null);
           queryClient.removeQueries({ queryKey: ["auth"] });
+          return null;
         }
         throw err;
       }

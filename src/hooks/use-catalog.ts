@@ -81,11 +81,22 @@ export function useCart() {
 
   const cartQuery = useQuery({
     queryKey: ["cart", cartId],
-    queryFn: () => api.getCart(cartId!),
+    queryFn: async () => {
+      if (!cartId) return null;
+      try {
+        return await api.getCart(cartId);
+      } catch (err) {
+        if (err instanceof ApiError && err.status === 404) {
+          clearCartId();
+          setCartIdState(null);
+          return null;
+        }
+        throw err;
+      }
+    },
     enabled: Boolean(cartId),
     staleTime: 10_000,
-    retry: (failureCount, error) =>
-      !(error instanceof ApiError && error.status === 404) && failureCount < 1,
+    retry: false,
   });
 
   useEffect(() => {
@@ -196,11 +207,22 @@ export function useWishlist() {
 
   const wishlistQuery = useQuery({
     queryKey: ["wishlist", wishlistId],
-    queryFn: () => api.getWishlist(wishlistId!),
+    queryFn: async () => {
+      if (!wishlistId) return null;
+      try {
+        return await api.getWishlist(wishlistId);
+      } catch (err) {
+        if (err instanceof ApiError && err.status === 404) {
+          clearWishlistId();
+          setWishlistIdState(null);
+          return null;
+        }
+        throw err;
+      }
+    },
     enabled: Boolean(wishlistId),
     staleTime: 10_000,
-    retry: (failureCount, error) =>
-      !(error instanceof ApiError && error.status === 404) && failureCount < 1,
+    retry: false,
   });
 
   useEffect(() => {

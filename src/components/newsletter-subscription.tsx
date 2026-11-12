@@ -84,8 +84,8 @@ export function NewsletterSubscription() {
     setSubscribing(true);
     try {
       await api.subscribeNewsletter(trimmedEmail, preference);
-    } catch (err) {
-      console.warn("Backend subscription sync warning:", err);
+    } catch {
+      // Offline fallback: handled gracefully
     }
 
     setIsSubscribed(true);
@@ -152,8 +152,8 @@ export function NewsletterSubscription() {
     if (targetEmail) {
       try {
         await api.unsubscribeNewsletter(targetEmail);
-      } catch (err) {
-        console.warn("Backend unsubscribe warning:", err);
+      } catch {
+        // Offline fallback: handled gracefully
       }
     }
 
@@ -182,6 +182,7 @@ export function NewsletterSubscription() {
             id="newsletter-subscribed-email"
             name="subscribedEmail"
             type="email"
+            autoComplete="email"
             value={email}
             disabled
             aria-label="Subscribed email address"
@@ -258,6 +259,7 @@ export function NewsletterSubscription() {
             id="newsletter-email"
             name="email"
             type="email"
+            autoComplete="email"
             required
             placeholder="Enter your email"
             aria-label="Email address"

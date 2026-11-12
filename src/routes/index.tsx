@@ -42,23 +42,23 @@ export const Route = createFileRoute("/")({
       await Promise.allSettled([
         context.queryClient.prefetchQuery({
           queryKey: ["catalog", "home"],
-          queryFn: () => import("@/lib/api").then((m) => m.api.getHomeCatalog()),
+          queryFn: () => api.getHomeCatalog(),
         }),
         context.queryClient.prefetchQuery({
           queryKey: ["brands"],
-          queryFn: () => import("@/lib/api").then((m) => m.api.getBrands()),
+          queryFn: () => api.getBrands(),
         }),
         context.queryClient.prefetchQuery({
           queryKey: ["cms", "home"],
-          queryFn: () => import("@/lib/api").then((m) => m.api.getCmsHome()),
+          queryFn: () => api.getCmsHome(),
         }),
         context.queryClient.prefetchQuery({
           queryKey: ["cms", "nav"],
-          queryFn: () => import("@/lib/api").then((m) => m.api.getCmsNav()),
+          queryFn: () => api.getCmsNav(),
         }),
         context.queryClient.prefetchQuery({
           queryKey: ["cms", "banners"],
-          queryFn: () => import("@/lib/api").then((m) => m.api.getCmsBanners()),
+          queryFn: () => api.getCmsBanners(),
         }),
       ]);
     } catch {
@@ -67,7 +67,7 @@ export const Route = createFileRoute("/")({
     const settings = await context.queryClient
       .ensureQueryData({
         queryKey: ["cms", "settings"],
-        queryFn: () => import("@/lib/api").then((m) => m.api.getCmsSettings()),
+        queryFn: () => api.getCmsSettings(),
       })
       .catch(() => undefined);
     return { settings };

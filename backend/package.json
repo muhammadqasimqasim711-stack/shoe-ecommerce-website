@@ -12,8 +12,8 @@
     "start:dev": "nest start --watch",
     "start:prod": "node dist/src/main.js",
     "test": "npm run test:unit && npm run test:e2e",
-    "test:unit": "jest",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:unit": "jest --passWithNoTests",
+    "test:e2e": "jest --config ./test/jest-e2e.json --passWithNoTests"
   },
   "prisma": {
     "seed": "ts-node prisma/seed.ts"

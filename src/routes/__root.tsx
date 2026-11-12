@@ -6,8 +6,19 @@ import {
   useRouter,
   HeadContent,
   Scripts,
+  type ErrorComponentProps,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
+
+if (import.meta.env.DEV && typeof window !== "undefined") {
+  const originalDebug = console.debug;
+  console.debug = (...args: unknown[]) => {
+    if (typeof args[0] === "string" && args[0].startsWith("[vite]")) {
+      return;
+    }
+    originalDebug.apply(console, args);
+  };
+}
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
@@ -37,7 +48,7 @@ function NotFoundComponent() {
   );
 }
 
-function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
+function ErrorComponent({ error, reset }: ErrorComponentProps) {
   console.error(error);
   const router = useRouter();
   useEffect(() => {
@@ -129,11 +140,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" data-tsd-source={undefined}>
-      <head data-tsd-source={undefined}>
+    <html lang="en" suppressHydrationWarning>
+      <head>
         <HeadContent />
       </head>
-      <body data-tsd-source={undefined}>
+      <body suppressHydrationWarning>
         {children}
         <Scripts />
       </body>

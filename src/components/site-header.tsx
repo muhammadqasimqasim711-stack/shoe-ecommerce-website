@@ -122,6 +122,8 @@ export function SiteHeader({ search = "", onSearchChange, showSearch = true }: S
               <input
                 id="desktop-product-search"
                 name="desktopProductSearch"
+                type="search"
+                autoComplete="off"
                 placeholder={t("searchPlaceholder")}
                 value={value}
                 onChange={(e) => setValue(e.target.value)}
@@ -217,6 +219,8 @@ export function SiteHeader({ search = "", onSearchChange, showSearch = true }: S
               <input
                 id="mobile-product-search"
                 name="mobileProductSearch"
+                type="search"
+                autoComplete="off"
                 placeholder={t("searchPlaceholder")}
                 value={value}
                 onChange={(e) => setValue(e.target.value)}
